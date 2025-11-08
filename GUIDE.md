@@ -7,7 +7,19 @@
 ffmpeg-next = "8.0"
 ```
 
-Supports FFmpeg 3.4 - 8.0.
+**Supports FFmpeg 3.4 - 8.0** (FFmpeg 8.0 recommended).
+
+**Quick setup with vcpkg (Windows):**
+
+```powershell
+# Install FFmpeg 8.x via vcpkg (static linking)
+vcpkg install ffmpeg:x64-windows-static-md
+
+# Build - vcpkg auto-detected
+cargo build --release
+```
+
+No additional configuration needed - vcpkg support is built-in!
 
 ---
 
@@ -494,6 +506,50 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Deployment
 
+### ⭐ Recommended: vcpkg Static Linking (Windows)
+
+**Best option for Windows deployment** - FFmpeg embedded in your executable, no DLLs needed.
+
+**1. Install FFmpeg via vcpkg:**
+
+```powershell
+# Static linking (recommended for Rust)
+vcpkg install ffmpeg:x64-windows-static-md
+
+# Or fully static (including CRT)
+vcpkg install ffmpeg:x64-windows-static
+```
+
+**2. Build your project:**
+
+The `rust-ffmpeg` library now has **built-in vcpkg support**. Just build normally:
+
+```powershell
+# vcpkg will be detected automatically if VCPKG_ROOT is set
+cargo build --release
+```
+
+If vcpkg is not in your PATH, set the root:
+
+```powershell
+$env:VCPKG_ROOT = "C:\vcpkg"
+cargo build --release
+```
+
+**3. Result:**
+
+✅ **Single `.exe` file** - no DLLs needed
+✅ **30-60 MB executable** (FFmpeg embedded)
+✅ **Works anywhere** - no FFmpeg installation required
+✅ **No version conflicts** - your FFmpeg version is locked
+
+**Triplet explanation:**
+- `x64-windows-static-md` - Static vcpkg libs + dynamic CRT (best for Rust)
+- `x64-windows-static` - Fully static (requires `RUSTFLAGS=-Ctarget-feature=+crt-static`)
+- `x64-windows` - Dynamic DLLs (see below)
+
+---
+
 ### Dynamic Linking (Default)
 
 By default, `ffmpeg-next` uses **dynamic linking** - it links to FFmpeg DLLs on your system.
@@ -589,26 +645,6 @@ This will:
 
 ---
 
-### vcpkg Integration (Windows)
-
-If you use vcpkg on Windows:
-
-```powershell
-# Install FFmpeg via vcpkg
-vcpkg install ffmpeg:x64-windows
-
-# Set vcpkg integration
-$env:VCPKG_ROOT = "C:\vcpkg"
-$env:FFMPEG_DIR = "C:\vcpkg\installed\x64-windows"
-
-# Build
-cargo build --release
-```
-
-With vcpkg, DLLs are in `C:\vcpkg\installed\x64-windows\bin\`.
-
----
-
 ### Checking DLL Dependencies
 
 To verify which DLLs your executable needs:
@@ -625,11 +661,15 @@ dumpbin /dependents target\release\your-app.exe
 
 ### Recommended Deployment Strategy
 
-**For quick prototypes:** Use dynamic linking + copy DLLs
+**🥇 Best (Windows):** vcpkg static linking (`ffmpeg:x64-windows-static-md`)
+- Single executable, no DLLs, works anywhere
+- Perfect for production apps
 
-**For production apps:**
-- Static linking if you control the distribution
-- Dynamic linking with installer that includes FFmpeg DLLs
-- Consider using installer tools (NSIS, WiX) to package DLLs
+**🥈 Quick prototypes:** Dynamic linking + copy DLLs
+- Fast development, manual DLL distribution
 
-**For open source:** Document FFmpeg build requirements clearly in README
+**🥉 Cross-platform:** Feature `build` (compiles FFmpeg from source)
+- Longest build time, but works on any platform
+- Good for open-source projects
+
+**For installers:** Use dynamic linking with NSIS/WiX to bundle DLLs
