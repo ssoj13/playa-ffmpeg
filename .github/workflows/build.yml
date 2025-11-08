@@ -9,7 +9,7 @@ jobs:
     name: Linux - FFmpeg 8.0 - build, test and lint
     runs-on: ubuntu-latest
     env:
-      FFMPEG_DIR: /home/runner/work/rust-ffmpeg/rust-ffmpeg/ffmpeg-8.0-linux-clang-default
+      FFMPEG_DIR: /home/runner/work/playa-ffmpeg/playa-ffmpeg/ffmpeg-8.0-linux-clang-default
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
