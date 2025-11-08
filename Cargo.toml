@@ -1,18 +1,18 @@
 [package]
-name    = "ffmpeg-next"
+name    = "playa-ffmpeg"
 version = "8.0.0"
 edition = "2024"
 build   = "build.rs"
 
-authors = ["meh. <meh@schizofreni.co>", "Zhiming Wang <i@zhimingwang.org>"]
+authors = ["Alex Joss <joss13@gmail.com>", "meh. <meh@schizofreni.co>", "Zhiming Wang <i@zhimingwang.org>"]
 license = "WTFPL"
 
-description   = "Safe FFmpeg wrapper (FFmpeg 4 compatible fork of the ffmpeg crate)"
+description   = "Safe FFmpeg wrapper with vcpkg integration for simplified cross-platform builds (FFmpeg 8.0, Rust 2024)"
 documentation = "https://docs.rs/ffmpeg-next"
-homepage      = "https://github.com/zmwangx/rust-ffmpeg#readme"
-repository    = "https://github.com/zmwangx/rust-ffmpeg"
+homepage      = "https://github.com/ssoj13/playa-ffmpeg"
+repository    = "https://github.com/ssoj13/playa-ffmpeg"
 readme        = "README.md"
-keywords      = ["ffmpeg", "multimedia", "video", "audio"]
+keywords      = ["ffmpeg", "multimedia", "video", "audio", "vcpkg"]
 categories    = ["multimedia"]
 
 [features]
