@@ -24,9 +24,39 @@ if (Test-Path $VCPKG_ROOT) {
     Write-Host "vcpkg installed" -ForegroundColor Green
 }
 
-# Set environment variable
+# Set up Visual Studio environment (MSVC toolchain)
 Write-Host ""
-Write-Host "Setting up environment variables..." -ForegroundColor Yellow
+Write-Host "Setting up Visual Studio environment..." -ForegroundColor Yellow
+
+$vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+if (Test-Path $vsWhere) {
+    $vsInstallPath = & $vsWhere -latest -property installationPath
+    if ($vsInstallPath) {
+        $vcvarsPath = "$vsInstallPath\VC\Auxiliary\Build\vcvars64.bat"
+        if (Test-Path $vcvarsPath) {
+            Write-Host "Found Visual Studio at: $vsInstallPath" -ForegroundColor Green
+
+            # Run vcvars64.bat and capture environment variables
+            $tempFile = [System.IO.Path]::GetTempFileName()
+            cmd /c "`"$vcvarsPath`" && set" > $tempFile
+
+            Get-Content $tempFile | ForEach-Object {
+                if ($_ -match "^([^=]+)=(.*)$") {
+                    [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2], "Process")
+                }
+            }
+            Remove-Item $tempFile
+            Write-Host "Visual Studio environment loaded" -ForegroundColor Green
+        }
+    }
+} else {
+    Write-Host "Visual Studio not found via vswhere" -ForegroundColor Yellow
+    Write-Host "Attempting to continue - MSVC may not be available" -ForegroundColor Yellow
+}
+
+# Set environment variables
+Write-Host ""
+Write-Host "Setting up vcpkg environment..." -ForegroundColor Yellow
 
 $currentVcpkgRoot = [Environment]::GetEnvironmentVariable("VCPKG_ROOT", "User")
 if ($currentVcpkgRoot -ne $VCPKG_ROOT) {
@@ -35,6 +65,13 @@ if ($currentVcpkgRoot -ne $VCPKG_ROOT) {
     Write-Host "Set VCPKG_ROOT=$VCPKG_ROOT" -ForegroundColor Green
 } else {
     Write-Host "VCPKG_ROOT already set" -ForegroundColor Green
+}
+
+# Set PKG_CONFIG_PATH for vcpkg
+$pkgConfigPath = "$VCPKG_ROOT\installed\$TRIPLET\lib\pkgconfig"
+if (Test-Path $pkgConfigPath) {
+    $env:PKG_CONFIG_PATH = $pkgConfigPath
+    Write-Host "Set PKG_CONFIG_PATH=$pkgConfigPath" -ForegroundColor Green
 }
 
 # Check for LLVM (required for bindgen)
