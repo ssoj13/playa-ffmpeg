@@ -15,13 +15,13 @@ Write-Host ""
 
 # Check if vcpkg is already installed
 if (Test-Path $VCPKG_ROOT) {
-    Write-Host "✓ vcpkg already installed at $VCPKG_ROOT" -ForegroundColor Green
+    Write-Host "vcpkg already installed at $VCPKG_ROOT" -ForegroundColor Green
 } else {
-    Write-Host "📦 Installing vcpkg..." -ForegroundColor Yellow
+    Write-Host "Installing vcpkg..." -ForegroundColor Yellow
     git clone https://github.com/microsoft/vcpkg.git $VCPKG_ROOT
     Set-Location $VCPKG_ROOT
     .\bootstrap-vcpkg.bat
-    Write-Host "✓ vcpkg installed" -ForegroundColor Green
+    Write-Host "vcpkg installed" -ForegroundColor Green
 }
 
 # Set environment variable
@@ -32,9 +32,9 @@ $currentVcpkgRoot = [Environment]::GetEnvironmentVariable("VCPKG_ROOT", "User")
 if ($currentVcpkgRoot -ne $VCPKG_ROOT) {
     [Environment]::SetEnvironmentVariable("VCPKG_ROOT", $VCPKG_ROOT, "User")
     $env:VCPKG_ROOT = $VCPKG_ROOT
-    Write-Host "✓ Set VCPKG_ROOT=$VCPKG_ROOT" -ForegroundColor Green
+    Write-Host "Set VCPKG_ROOT=$VCPKG_ROOT" -ForegroundColor Green
 } else {
-    Write-Host "✓ VCPKG_ROOT already set" -ForegroundColor Green
+    Write-Host "VCPKG_ROOT already set" -ForegroundColor Green
 }
 
 # Check for LLVM (required for bindgen)
@@ -43,46 +43,46 @@ Write-Host "Checking for LLVM..." -ForegroundColor Yellow
 
 $llvmPath = Get-Command clang -ErrorAction SilentlyContinue
 if ($null -eq $llvmPath) {
-    Write-Host "⚠ LLVM not found. Installing via Chocolatey..." -ForegroundColor Yellow
+    Write-Host "LLVM not found. Installing via Chocolatey..." -ForegroundColor Yellow
 
     # Check if Chocolatey is installed
     $chocoPath = Get-Command choco -ErrorAction SilentlyContinue
     if ($null -eq $chocoPath) {
-        Write-Host "❌ Chocolatey not found. Please install LLVM manually:" -ForegroundColor Red
+        Write-Host "Chocolatey not found. Please install LLVM manually:" -ForegroundColor Red
         Write-Host "  https://releases.llvm.org/download.html" -ForegroundColor Red
         Write-Host "  Or install Chocolatey: https://chocolatey.org/install" -ForegroundColor Red
         exit 1
     }
 
     choco install llvm -y
-    Write-Host "✓ LLVM installed" -ForegroundColor Green
+    Write-Host "LLVM installed" -ForegroundColor Green
 
     # Refresh PATH
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 } else {
-    Write-Host "✓ LLVM found: $($llvmPath.Source)" -ForegroundColor Green
+    Write-Host "LLVM found: $($llvmPath.Source)" -ForegroundColor Green
 }
 
 # Install FFmpeg via vcpkg
 Write-Host ""
-Write-Host "📦 Installing FFmpeg ${TRIPLET} via vcpkg..." -ForegroundColor Yellow
+Write-Host "Installing FFmpeg ${TRIPLET} via vcpkg..." -ForegroundColor Yellow
 Write-Host "This may take 30-60 minutes on first run..." -ForegroundColor Yellow
 
 & "$VCPKG_ROOT\vcpkg.exe" install ffmpeg:$TRIPLET
 
-Write-Host "✓ FFmpeg installed" -ForegroundColor Green
+Write-Host "FFmpeg installed" -ForegroundColor Green
 
 # Return to project directory
 Set-Location $PSScriptRoot
 
 # Build rust-ffmpeg
 Write-Host ""
-Write-Host "🦀 Building rust-ffmpeg..." -ForegroundColor Yellow
+Write-Host "Building rust-ffmpeg..." -ForegroundColor Yellow
 
 cargo build --release
 
 Write-Host ""
-Write-Host "✅ Setup complete!" -ForegroundColor Green
+Write-Host "Setup complete!" -ForegroundColor Green
 Write-Host ""
 
 # Show library info
