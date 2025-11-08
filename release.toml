@@ -1,15 +1,13 @@
 # cargo-release configuration for playa-ffmpeg
 # https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md
 
-# Pre-release checks
-[release]
 # Run cargo test before releasing
 pre-release-hook = ["cargo", "test", "--release"]
 
 # Push to git remote
 push = true
 
-# Allow dirty working directory (useful for local testing)
+# Allow these branches for releases
 allow-branch = ["dev", "master"]
 
 # Commit message template
@@ -19,10 +17,8 @@ pre-release-commit-message = "Release {{crate_name}} version {{version}}"
 tag-name = "v{{version}}"
 tag-message = "Release v{{version}}"
 
-# Sign tags
+# Sign tags and commits
 sign-tag = false
-
-# Sign commits
 sign-commit = false
 
 # Push tags
@@ -37,15 +33,5 @@ verify = false
 # Consolidate commits
 consolidate-commits = true
 
-# Shared version across workspace (we're not using workspace, but good to have)
-shared-version = false
-
-# Pre-release replacements (update version in other files if needed)
-[[release.pre-release-replacements]]
-file = "README.md"
-search = "playa-ffmpeg/badge.svg"
-replace = "playa-ffmpeg/badge.svg"
-exactly = 0
-
-# Post-release hook (optional, can add notifications here)
+# Post-release hook (optional)
 # post-release-hook = ["echo", "Released {{crate_name}} v{{version}}!"]
