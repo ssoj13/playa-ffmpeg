@@ -1,7 +1,13 @@
 # Publish playa-ffmpeg to crates.io
-# Usage: .\publish.ps1 [patch|minor|major]
+# Usage: .\publish.ps1 [patch|minor|major] [rel]
+#        .\publish.ps1           # dry-run patch
+#        .\publish.ps1 minor     # dry-run minor
+#        .\publish.ps1 patch rel # release patch
 
-param([string]$Level = 'patch')
+param(
+    [string]$Level = 'patch',
+    [string]$Mode = ''
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -29,4 +35,9 @@ $env:VCPKG_ROOT = "C:\vcpkg"
 $env:PKG_CONFIG_PATH = "C:\vcpkg\installed\x64-windows-static-md\lib\pkgconfig"
 
 # Run cargo-release
-cargo release $Level --execute
+if ($Mode -eq 'rel') {
+    cargo release $Level --execute
+} else {
+    Write-Host "DRY-RUN mode (add 'rel' argument to actually publish)" -ForegroundColor Yellow
+    cargo release $Level
+}
