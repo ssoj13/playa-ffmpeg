@@ -9,10 +9,7 @@ This is a modernized fork with cross-platform build improvements and vcpkg integ
 - **vcpkg Integration**: Automatic FFmpeg installation and static linking on Windows/Linux/macOS
 - **Rust 2024 Edition**: Updated to latest Rust edition with modern syntax
 - **FFmpeg 8.0 Support**: Full support for FFmpeg 8.0 APIs
-- **Cross-platform Build Scripts**:
-  - `build.ps1` - Windows (PowerShell)
-  - `build.sh` - Linux/macOS (unified script)
-  - `build-mac.sh` - macOS-specific (zsh optimized)
+- **Unified Bootstrap Script**: Single script for building and publishing across all platforms
 - **Improved CI/CD**: Updated GitHub Actions workflows, modern action versions
 - **Enhanced Examples**: New video-info tool, improved frame dumping
 - **Static Linking**: Configured for static linking with vcpkg-provided libraries
@@ -21,35 +18,33 @@ This is a modernized fork with cross-platform build improvements and vcpkg integ
 ## Quick Start
 
 ### Windows
-```powershell
-.\build.ps1
+```cmd
+bootstrap.cmd build
 ```
 
 ### Linux/macOS
 ```bash
-./build.sh
+./bootstrap.sh build
 ```
 
 See [examples/README.md](examples/README.md) for usage examples.
 
+## Build Options
+
+```bash
+bootstrap build           # Build release (default)
+bootstrap build --release # Build release (explicit)
+bootstrap build --debug   # Build debug
+```
+
 ## Publishing (Maintainers)
 
-Uses [cargo-release](https://github.com/crate-ci/cargo-release). Install: `cargo install cargo-release`
-
-**Dry-run (default):**
-```powershell
-.\publish.ps1        # preview patch release
-.\publish.ps1 minor  # preview minor release
+```bash
+bootstrap crate          # Dry-run (preview changes)
+bootstrap crate publish  # Publish to crates.io
 ```
 
-**Actual release:**
-```powershell
-.\publish.ps1 patch rel  # publish patch: 8.0.0 → 8.0.1
-.\publish.ps1 minor rel  # publish minor: 8.0.0 → 8.1.0
-.\publish.ps1 major rel  # publish major: 8.0.0 → 9.0.0
-```
-
-Linux/macOS: same, use `./publish.sh` instead
+Uses [cargo-release](https://github.com/crate-ci/cargo-release) - automatically installed on first use.
 
 ---
 
