@@ -1,4 +1,4 @@
-# rust-ffmpeg - Modern Fork with vcpkg Integration
+# playa-ffmpeg - Modern FFmpeg Wrapper with vcpkg Integration
 
 **Modified by:** Alex Joss (joss13@gmail.com)
 
