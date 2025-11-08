@@ -41,26 +41,36 @@ if ($currentVcpkgRoot -ne $VCPKG_ROOT) {
 Write-Host ""
 Write-Host "Checking for LLVM..." -ForegroundColor Yellow
 
-$llvmPath = Get-Command clang -ErrorAction SilentlyContinue
-if ($null -eq $llvmPath) {
-    Write-Host "LLVM not found. Installing via Chocolatey..." -ForegroundColor Yellow
+# Check vcpkg LLVM first
+$vcpkgLlvmPath = "$VCPKG_ROOT\installed\$TRIPLET\tools\llvm\clang.exe"
+$llvmFound = $false
 
-    # Check if Chocolatey is installed
-    $chocoPath = Get-Command choco -ErrorAction SilentlyContinue
-    if ($null -eq $chocoPath) {
-        Write-Host "Chocolatey not found. Please install LLVM manually:" -ForegroundColor Red
-        Write-Host "  https://releases.llvm.org/download.html" -ForegroundColor Red
-        Write-Host "  Or install Chocolatey: https://chocolatey.org/install" -ForegroundColor Red
+if (Test-Path $vcpkgLlvmPath) {
+    Write-Host "LLVM found in vcpkg: $vcpkgLlvmPath" -ForegroundColor Green
+    $env:LIBCLANG_PATH = "$VCPKG_ROOT\installed\$TRIPLET\tools\llvm"
+    $llvmFound = $true
+} else {
+    # Check PATH
+    $llvmPath = Get-Command clang -ErrorAction SilentlyContinue
+    if ($null -ne $llvmPath) {
+        Write-Host "LLVM found in PATH: $($llvmPath.Source)" -ForegroundColor Green
+        $llvmFound = $true
+    }
+}
+
+if (-not $llvmFound) {
+    Write-Host "LLVM not found. Installing via vcpkg..." -ForegroundColor Yellow
+    & "$VCPKG_ROOT\vcpkg.exe" install llvm:$TRIPLET
+
+    if (Test-Path $vcpkgLlvmPath) {
+        Write-Host "LLVM installed" -ForegroundColor Green
+        $env:LIBCLANG_PATH = "$VCPKG_ROOT\installed\$TRIPLET\tools\llvm"
+    } else {
+        Write-Host "LLVM installation failed. Please install manually:" -ForegroundColor Red
+        Write-Host "  vcpkg install llvm:$TRIPLET" -ForegroundColor Red
+        Write-Host "  Or download from: https://releases.llvm.org/download.html" -ForegroundColor Red
         exit 1
     }
-
-    choco install llvm -y
-    Write-Host "LLVM installed" -ForegroundColor Green
-
-    # Refresh PATH
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-} else {
-    Write-Host "LLVM found: $($llvmPath.Source)" -ForegroundColor Green
 }
 
 # Install FFmpeg via vcpkg
