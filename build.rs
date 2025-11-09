@@ -61,27 +61,6 @@ fn main() {
             }
         }
     }
-}
-
-fn get_vcpkg_triplet() -> String {
-    if cfg!(target_os = "windows") {
-        if cfg!(target_env = "msvc") {
-            // Use static-md for static linking with dynamic CRT
-            "x64-windows-static-md".to_string()
-        } else {
-            "x64-mingw-static".to_string()
-        }
-    } else if cfg!(target_os = "macos") {
-        if cfg!(target_arch = "aarch64") {
-            "arm64-osx-release".to_string()
-        } else {
-            "x64-osx-release".to_string()
-        }
-    } else {
-        // Linux - static linking
-        "x64-linux-release".to_string()
-    }
-}
 
     // Process FFmpeg feature flags from ffmpeg-sys-next
     for (name, value) in env::vars() {
@@ -102,5 +81,25 @@ fn get_vcpkg_triplet() -> String {
         println!("cargo:rustc-link-lib=oleaut32");
         println!("cargo:rustc-link-lib=mfuuid");
         println!("cargo:rustc-link-lib=mfplat");
+    }
+}
+
+fn get_vcpkg_triplet() -> String {
+    if cfg!(target_os = "windows") {
+        if cfg!(target_env = "msvc") {
+            // Use static-md for static linking with dynamic CRT
+            "x64-windows-static-md".to_string()
+        } else {
+            "x64-mingw-static".to_string()
+        }
+    } else if cfg!(target_os = "macos") {
+        if cfg!(target_arch = "aarch64") {
+            "arm64-osx-release".to_string()
+        } else {
+            "x64-osx-release".to_string()
+        }
+    } else {
+        // Linux - static linking
+        "x64-linux-release".to_string()
     }
 }
