@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "playa-ffmpeg",
+  "version-string": "8.0.2",
+  "dependencies": [
+    {
+      "name": "ffmpeg",
+      "version>=": "7.1.1",
+      "default-features": false,
+      "features": [
+        "avcodec",
+        "avdevice",
+        "avfilter",
+        "avformat",
+        "swresample",
+        "swscale",
+        "nvcodec"
+      ]
+    }
+  ]
+}

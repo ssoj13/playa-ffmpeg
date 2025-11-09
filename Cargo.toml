@@ -16,7 +16,7 @@ keywords      = ["ffmpeg", "multimedia", "video", "audio", "vcpkg"]
 categories    = ["multimedia"]
 
 [features]
-default = ["codec", "device", "filter", "format", "software-resampling", "software-scaling"]
+default = ["codec", "device", "filter", "format", "software-resampling", "software-scaling", "nvenc"]
 
 # ffmpeg<xy> are obsolete features kept for backward compatibility purposes and
 # don't do anything anymore (equivalents are automatically specified through
@@ -106,6 +106,12 @@ software-scaling    = ["ffmpeg-sys-next/swscale", "codec"]
 # platforms
 rpi = []
 
+# hardware encoding (NVENC included in default)
+nvenc = []
+vaapi = []
+videotoolbox = []
+qsv = []
+
 [dependencies]
 libc     = "0.2"
 bitflags = "2.9"
@@ -123,3 +129,8 @@ vcpkg = "0.2"
 
 [dev-dependencies]
 image = "0.25"  # For examples that save frames to image files
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

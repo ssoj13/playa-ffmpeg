@@ -6,18 +6,47 @@ on:
     - cron: "0 0 * * *"
 jobs:
   build-test-lint-linux:
-    name: Linux - FFmpeg 8.0 - build, test and lint
+    name: Linux - FFmpeg 7.1 vcpkg static - build, test and lint
     runs-on: ubuntu-latest
     env:
-      FFMPEG_DIR: /home/runner/work/playa-ffmpeg/playa-ffmpeg/ffmpeg-8.0-linux-clang-default
+      VCPKG_DEFAULT_TRIPLET: x64-linux-release
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '365f6444ab40ee87c73c947b475b3a267b3cb77c'
+
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg
+            ~/.cache/vcpkg
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-
+
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y --no-install-recommends clang curl pkg-config xz-utils libxv-dev libc++-dev
-          curl -L https://sourceforge.net/projects/avbuild/files/linux/ffmpeg-8.0-linux-clang-default.tar.xz/download -o ffmpeg.tar.xz
-          tar -xf ffmpeg.tar.xz
+          sudo apt install -y --no-install-recommends \
+            clang \
+            curl \
+            pkg-config \
+            nasm \
+            yasm \
+            autoconf \
+            automake \
+            libtool \
+            libxv-dev \
+            libc++-dev
+          vcpkg install ffmpeg[nvcodec]:x64-linux-release
+        env:
+          VCPKG_ROOT: ${{ github.workspace }}/vcpkg
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -36,13 +65,49 @@ jobs:
           cargo fmt -- --check
 
   build-test-lint-macos:
-    name: macOS - FFmpeg latest - build, test and lint
+    name: macOS - FFmpeg 7.1 vcpkg static - build, test and lint
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '365f6444ab40ee87c73c947b475b3a267b3cb77c'
+
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg
+            ~/.cache/vcpkg
+          key: ${{ runner.os }}-${{ runner.arch }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-vcpkg-
+
+      - name: Determine triplet
+        id: triplet
+        run: |
+          if [ "$(uname -m)" = "arm64" ]; then
+            echo "triplet=arm64-osx-release" >> $GITHUB_OUTPUT
+          else
+            echo "triplet=x64-osx-release" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install dependencies
         run: |
-          brew install ffmpeg pkg-config
+          brew install \
+            nasm \
+            yasm \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config
+          vcpkg install ffmpeg[nvcodec]:${{ steps.triplet.outputs.triplet }}
+        env:
+          VCPKG_ROOT: ${{ github.workspace }}/vcpkg
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -61,22 +126,36 @@ jobs:
           cargo fmt -- --check
 
   build-test-lint-windows:
-    name: Windows - FFmpeg latest - build, test and lint
+    name: Windows - FFmpeg 7.1 vcpkg static - build, test and lint
     runs-on: windows-latest
     env:
-      FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
+      VCPKG_DEFAULT_TRIPLET: x64-windows-static-md
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '365f6444ab40ee87c73c947b475b3a267b3cb77c'
+
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg
+            ~\AppData\Local\vcpkg
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-
+
       - name: Install dependencies
         run: |
           $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
           Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
-          Invoke-WebRequest "${env:FFMPEG_DOWNLOAD_URL}" -OutFile ffmpeg-release-full-shared.7z
-          7z x ffmpeg-release-full-shared.7z
-          mkdir ffmpeg
-          mv ffmpeg-*/* ffmpeg/
-          Add-Content $env:GITHUB_ENV "FFMPEG_DIR=${pwd}\ffmpeg`n"
-          Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
+          vcpkg install ffmpeg[nvcodec]:x64-windows-static-md
+          Add-Content $env:GITHUB_ENV "VCPKG_ROOT=${{ github.workspace }}\vcpkg`n"
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
