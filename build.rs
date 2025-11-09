@@ -23,16 +23,10 @@ fn main() {
                     println!("cargo:warning=FFmpeg not found in vcpkg, attempting automatic installation...");
 
                     let triplet = get_vcpkg_triplet();
-                    let vcpkg_exe = if cfg!(target_os = "windows") {
-                        format!("{}/vcpkg.exe", vcpkg_root)
-                    } else {
-                        format!("{}/vcpkg", vcpkg_root)
-                    };
+                    let vcpkg_exe = if cfg!(target_os = "windows") { format!("{}/vcpkg.exe", vcpkg_root) } else { format!("{}/vcpkg", vcpkg_root) };
 
                     // Install FFmpeg via vcpkg
-                    let status = Command::new(&vcpkg_exe)
-                        .args(["install", &format!("ffmpeg:{}", triplet)])
-                        .status();
+                    let status = Command::new(&vcpkg_exe).args(["install", &format!("ffmpeg:{}", triplet)]).status();
 
                     match status {
                         Ok(s) if s.success() => {
@@ -93,11 +87,7 @@ fn get_vcpkg_triplet() -> String {
             "x64-mingw-static".to_string()
         }
     } else if cfg!(target_os = "macos") {
-        if cfg!(target_arch = "aarch64") {
-            "arm64-osx-release".to_string()
-        } else {
-            "x64-osx-release".to_string()
-        }
+        if cfg!(target_arch = "aarch64") { "arm64-osx-release".to_string() } else { "x64-osx-release".to_string() }
     } else {
         // Linux - static linking
         "x64-linux-release".to_string()

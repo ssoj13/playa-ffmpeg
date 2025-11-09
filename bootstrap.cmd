@@ -45,6 +45,7 @@ echo.
 :: Parse command
 if "%~1"=="" goto :help
 if /i "%~1"=="build" goto :build
+if /i "%~1"=="format" goto :format
 if /i "%~1"=="crate" goto :crate
 goto :help
 
@@ -57,6 +58,16 @@ goto :help
     echo Building playa-ffmpeg %BUILD_MODE%...
     cargo build --examples %BUILD_MODE%
     exit /b %errorlevel%
+
+:format
+    echo Formatting code with cargo fmt...
+    cargo fmt
+    if errorlevel 1 (
+        echo Error: Failed to format code
+        exit /b 1
+    )
+    echo ✓ Code formatted successfully
+    exit /b 0
 
 :crate
     cargo release --version >nul 2>&1
@@ -88,6 +99,7 @@ goto :help
     echo   bootstrap.cmd build                  # Build release (default)
     echo   bootstrap.cmd build --release        # Build release
     echo   bootstrap.cmd build --debug          # Build debug
+    echo   bootstrap.cmd format                 # Format code with cargo fmt
     echo   bootstrap.cmd crate                  # Dry-run crate publish
     echo   bootstrap.cmd crate publish          # Publish crate to crates.io
     echo.

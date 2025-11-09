@@ -34,6 +34,7 @@ show_help() {
     echo "  ./bootstrap.sh build                  # Build release (default)"
     echo "  ./bootstrap.sh build --release        # Build release"
     echo "  ./bootstrap.sh build --debug          # Build debug"
+    echo "  ./bootstrap.sh format                 # Format code with cargo fmt"
     echo "  ./bootstrap.sh crate                  # Dry-run crate publish"
     echo "  ./bootstrap.sh crate publish          # Publish crate to crates.io"
     echo ""
@@ -50,6 +51,12 @@ build_project() {
 
     echo "Building playa-ffmpeg $build_mode..."
     cargo build --examples $build_mode
+}
+
+format_code() {
+    echo "Formatting code with cargo fmt..."
+    cargo fmt
+    echo "✓ Code formatted successfully"
 }
 
 publish_crate() {
@@ -73,6 +80,9 @@ publish_crate() {
 case "$1" in
     build)
         build_project "$2"
+        ;;
+    format)
+        format_code
         ;;
     crate)
         publish_crate "$2"
