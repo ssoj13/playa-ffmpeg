@@ -48,9 +48,10 @@ jobs:
         env:
           VCPKG_INSTALLATION_ROOT: /usr/local/share/vcpkg
 
-      - name: Set PKG_CONFIG_PATH
+      - name: Set environment variables
         run: |
           echo "PKG_CONFIG_PATH=/usr/local/share/vcpkg/installed/x64-linux-release/lib/pkgconfig" >> $GITHUB_ENV
+          echo "VCPKG_ROOT=/usr/local/share/vcpkg" >> $GITHUB_ENV
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -114,9 +115,10 @@ jobs:
         env:
           VCPKG_INSTALLATION_ROOT: /usr/local/share/vcpkg
 
-      - name: Set PKG_CONFIG_PATH
+      - name: Set environment variables
         run: |
           echo "PKG_CONFIG_PATH=/usr/local/share/vcpkg/installed/${{ steps.triplet.outputs.triplet }}/lib/pkgconfig" >> $GITHUB_ENV
+          echo "VCPKG_ROOT=/usr/local/share/vcpkg" >> $GITHUB_ENV
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -159,6 +161,7 @@ jobs:
         run: |
           $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
           Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
+          Add-Content $env:GITHUB_ENV "VCPKG_ROOT=C:\vcpkg`n"
 
       - name: Install FFmpeg via vcpkg
         run: |
