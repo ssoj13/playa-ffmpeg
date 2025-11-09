@@ -62,6 +62,16 @@ jobs:
         with:
           submodules: true
 
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/share/vcpkg/installed
+            ~/.cache/vcpkg
+          key: ${{ runner.os }}-${{ runner.arch }}-vcpkg-osx-${{ hashFiles('.github/workflows/build.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-vcpkg-osx-
+
       - name: Determine triplet
         id: triplet
         run: |
