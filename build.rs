@@ -31,7 +31,7 @@ fn main() {
 
                     // Install FFmpeg via vcpkg
                     let status = Command::new(&vcpkg_exe)
-                        .args(&["install", &format!("ffmpeg:{}", triplet)])
+                        .args(["install", &format!("ffmpeg:{}", triplet)])
                         .status();
 
                     match status {
