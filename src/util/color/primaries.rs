@@ -63,6 +63,8 @@ impl From<AVColorPrimaries> for Primaries {
             AVCOL_PRI_JEDEC_P22 => Primaries::JEDEC_P22,
             #[cfg(feature = "ffmpeg_4_3")]
             AVCOL_PRI_EBU3213 => Primaries::EBU3213,
+            // FFmpeg 8.x point releases keep growing this enum (e.g. AVCOL_PRI_EXT_*).
+            _ => Primaries::Unspecified,
         }
     }
 }

@@ -142,6 +142,8 @@ impl From<AVPacketSideDataType> for Type {
             AV_PKT_DATA_3D_REFERENCE_DISPLAYS => Type::THREE_D_REFERENCE_DISPLAYS,
             #[cfg(feature = "ffmpeg_8_0")]
             AV_PKT_DATA_RTCP_SR => Type::RTCP_SR,
+            // FFmpeg 8.x point releases keep adding side-data types — fall through to NB sentinel.
+            _ => Type::DataNb,
         }
     }
 }

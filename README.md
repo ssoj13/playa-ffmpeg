@@ -59,28 +59,67 @@ New-Item -Path "$env:VCPKG_ROOT\triplets\community" -ItemType Directory -Force
 Set-Content -Path "$env:VCPKG_ROOT\triplets\community\x64-windows-static-md-release.cmake" -Value $tripletContent
 
 # Install FFmpeg (release only - ~2x faster than default)
-vcpkg install ffmpeg[core,avcodec,avdevice,avfilter,avformat,swresample,swscale,nvcodec]:x64-windows-static-md-release
+# NOTE: avdevice/avfilter are intentionally omitted — see "Why no avfilter?" below.
+vcpkg install ffmpeg[core,avcodec,avformat,swresample,swscale,nvcodec]:x64-windows-static-md-release
 ```
+
+#### Manifest-mode (pinned baseline) — recommended
+
+The playa workspace ships `vcpkg.json` + `vcpkg-configuration.json` that lock
+FFmpeg to a specific microsoft/vcpkg revision. Running the install through
+manifest mode guarantees CI and local dev get bit-identical port versions
+regardless of how stale or fresh the global vcpkg checkout is. Run **once**
+from the workspace root:
+
+```powershell
+vcpkg install --x-manifest-root . --x-install-root .vcpkg/installed --triplet x64-windows-static-md-release
+```
+
+`xtask::env_setup` auto-detects `.vcpkg/installed/<triplet>/` and points
+`VCPKG_ROOT` at it; the global vcpkg state becomes irrelevant for playa
+builds. To bump the baseline: replace the SHA in `vcpkg-configuration.json`,
+delete `.vcpkg/installed/<triplet>/`, and rerun the command above.
 
 **Windows (MSVC) - Debug + Release (default):**
 ```powershell
-vcpkg install ffmpeg[core,avcodec,avdevice,avfilter,avformat,swresample,swscale,nvcodec]:x64-windows-static-md
+vcpkg install ffmpeg[core,avcodec,avformat,swresample,swscale,nvcodec]:x64-windows-static-md
 ```
 
 **Linux:**
 ```bash
-vcpkg install ffmpeg[core,avcodec,avdevice,avfilter,avformat,swresample,swscale,nvcodec]:x64-linux-release
+vcpkg install ffmpeg[core,avcodec,avformat,swresample,swscale,nvcodec]:x64-linux-release
 ```
 
 **macOS (Intel):**
 ```bash
-vcpkg install ffmpeg[core,avcodec,avdevice,avfilter,avformat,swresample,swscale]:x64-osx-release
+vcpkg install ffmpeg[core,avcodec,avformat,swresample,swscale]:x64-osx-release
 ```
 
 **macOS (Apple Silicon):**
 ```bash
-vcpkg install ffmpeg[core,avcodec,avdevice,avfilter,avformat,swresample,swscale]:arm64-osx-release
+vcpkg install ffmpeg[core,avcodec,avformat,swresample,swscale]:arm64-osx-release
 ```
+
+### Why no `avfilter` / `avdevice`?
+
+Starting with **FFmpeg 8.1**, vcpkg's `avfilter` build pulls in the
+`vsrc_gfxcapture` source filter (Windows.Graphics.Capture WinRT + C++
+`<regex>`). On Windows that introduces an unresolved
+`__std_regex_transform_primary_char` against a different MSVC C++ STL than
+the one currently active in your toolchain — and there's no way to disable
+that filter via vcpkg features alone.
+
+Since playa only consumes `avcodec`, `avformat`, `swresample`, `swscale`
+(plus `nvcodec` for hardware encode), the `playa-ffmpeg` `default` features
+explicitly exclude `device` / `filter`. If you need them, install the
+matching vcpkg ports **and** opt into the features in your `Cargo.toml`:
+
+```toml
+playa-ffmpeg = { path = "...", default-features = false, features = ["static", "codec", "format", "filter"] }
+```
+
+If linking still fails with the WinRT regex symbol, downgrade vcpkg's
+`ffmpeg` port baseline to an 8.0.x build via `vcpkg-configuration.json`.
 
 **Platform-Specific Notes:**
 

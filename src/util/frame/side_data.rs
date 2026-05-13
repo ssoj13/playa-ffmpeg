@@ -144,6 +144,10 @@ impl From<AVFrameSideDataType> for Type {
 
             #[cfg(feature = "ffmpeg_8_0")]
             AV_FRAME_DATA_3D_REFERENCE_DISPLAYS => Type::THREE_D_REFERENCE_DISPLAYS,
+            // FFmpeg 8.x point releases keep adding new side-data types
+            // (e.g. AV_FRAME_DATA_EXIF in 8.1). Map anything unknown to PanScan
+            // so the conversion stays forward-compatible without a panic.
+            _ => Type::PanScan,
         }
     }
 }

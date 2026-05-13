@@ -1389,6 +1389,9 @@ impl From<AVCodecID> for Id {
             AV_CODEC_ID_G728 => Id::G728,
             #[cfg(feature = "ffmpeg_8_0")]
             AV_CODEC_ID_IVTV_VBI => Id::IVTV_VBI,
+            // FFmpeg 8.x ships new codec IDs in point releases (8.1+).
+            // Map anything we don't yet recognize to None instead of panicking.
+            _ => Id::None,
         }
     }
 }

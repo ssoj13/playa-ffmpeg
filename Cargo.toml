@@ -16,7 +16,14 @@ keywords      = ["ffmpeg", "multimedia", "video", "audio", "vcpkg"]
 categories    = ["multimedia"]
 
 [features]
-default = ["codec", "device", "filter", "format", "software-resampling", "software-scaling", "nvenc"]
+# `device` (avdevice) and `filter` (avfilter) are intentionally NOT in the
+# default set. vcpkg's FFmpeg 8.1+ ships avfilter with vsrc_gfxcapture
+# (Windows.Graphics.Capture WinRT + C++ <regex>) which causes MSVC STL link
+# mismatches on Windows. avdevice depends on avformat anyway and isn't used
+# anywhere in playa. To enable them, install the corresponding vcpkg ports
+# (`vcpkg install ffmpeg[avdevice,avfilter,...]:<triplet>`) AND opt into the
+# features explicitly in your Cargo.toml.
+default = ["codec", "format", "software-resampling", "software-scaling", "nvenc"]
 
 # ffmpeg<xy> are obsolete features kept for backward compatibility purposes and
 # don't do anything anymore (equivalents are automatically specified through

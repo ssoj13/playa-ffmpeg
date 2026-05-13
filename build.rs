@@ -66,22 +66,56 @@ fn main() {
         }
     }
 
-    // Link Windows system libraries required by FFmpeg
+    // Link platform system libraries required by FFmpeg static build.
+    // Mirrors the rustflags previously kept in .cargo/config.toml — moved here
+    // so the linkage applies when this crate is built as a workspace member
+    // (rustflags from per-crate config.toml are ignored in workspace context).
     #[cfg(target_os = "windows")]
     {
-        println!("cargo:rustc-link-lib=strmiids");
-        println!("cargo:rustc-link-lib=uuid");
-        println!("cargo:rustc-link-lib=ole32");
-        println!("cargo:rustc-link-lib=oleaut32");
-        println!("cargo:rustc-link-lib=mfuuid");
-        println!("cargo:rustc-link-lib=mfplat");
+        // System libs FFmpeg pulls in via WinSDK / DirectShow / Media Foundation /
+        // BCrypt / WinSock / GDI / VFW. `msvcprt` is the MSVC C++ runtime —
+        // FFmpeg 8.1+ avfilter/vsrc_gfxcapture uses C++ <regex>, so we need it
+        // alongside the default C runtime that rustc already links.
+        for lib in [
+            "bcrypt", "user32", "ole32", "oleaut32", "mfuuid", "strmiids",
+            "mfplat", "secur32", "ws2_32", "shlwapi", "gdi32", "vfw32", "uuid",
+            "msvcprt",
+        ] {
+            println!("cargo:rustc-link-lib={lib}");
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        for fw in ["CoreFoundation", "CoreMedia", "CoreVideo", "VideoToolbox", "AudioToolbox", "Security"] {
+            println!("cargo:rustc-link-lib=framework={fw}");
+        }
+        for lib in ["iconv", "bz2", "z"] {
+            println!("cargo:rustc-link-lib={lib}");
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        for lib in ["m", "pthread", "dl"] {
+            println!("cargo:rustc-link-lib={lib}");
+        }
     }
 }
 
 fn get_vcpkg_triplet() -> String {
-    // Respect VCPKG_DEFAULT_TRIPLET if set (e.g., for release-only builds)
+    // Honor explicit overrides in this order:
+    //  1. VCPKGRS_TRIPLET — what xtask::env_setup and the `vcpkg` crate use.
+    //  2. VCPKG_DEFAULT_TRIPLET — kept for backward compat with older docs/CI.
+    if let Ok(triplet) = env::var("VCPKGRS_TRIPLET") {
+        if !triplet.is_empty() {
+            return triplet;
+        }
+    }
     if let Ok(triplet) = env::var("VCPKG_DEFAULT_TRIPLET") {
-        return triplet;
+        if !triplet.is_empty() {
+            return triplet;
+        }
     }
 
     // Otherwise use platform defaults
